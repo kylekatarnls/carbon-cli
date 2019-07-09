@@ -1,0 +1,31 @@
+{
+    "name": "carbon-cli/carbon-cli",
+    "description": "CLI tool for Carbon",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "kylekatarnls",
+            "homepage": "http://github.com/kylekatarnls"
+        }
+    ],
+    "bin": [
+        "bin/carbon"
+    ],
+    "require": {
+        "php": "^7.1 || ^8.0",
+        "simple-cli/simple-cli": "^1.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Carbon\\": "src/Carbon/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Carbon\\Tests\\": "src/Carbon/Tests/"
+        }
+    }
+}
