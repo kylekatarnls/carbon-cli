@@ -18,9 +18,19 @@ class Generator
      */
     protected function getMethods($boot)
     {
-        $boot instanceof Closure
-            ? call_user_func($boot)
-            : Carbon::mixin(new $boot());
+        if (is_string($boot)) {
+            if (class_exists($className = $boot)) {
+                $boot = function () use ($className) {
+                    Carbon::mixin(new $className());
+                };
+            } elseif (file_exists($file = $boot)) {
+                $boot = function () use ($file) {
+                    include $file;
+                };
+            }
+        }
+
+        call_user_func($boot);
 
         $c = new ReflectionClass(Carbon::now());
         $macros = $c->getProperty('globalMacros');

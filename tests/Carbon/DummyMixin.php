@@ -1,8 +1,8 @@
 <?php
 
-namespace Carbon;
+namespace Carbon\Tests;
 
-class Test
+class DummyMixin
 {
     /**
      * @return \Closure

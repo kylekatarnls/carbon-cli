@@ -40,10 +40,12 @@ class Macro implements Command
     {
         /* @var Cli $cli */
 
+        $path = realpath($this->sourcePath);
         $generator = new Generator();
-        $generator->writeHelpers($this->class, realpath($this->sourcePath), $this->filePrefix);
+        $generator->writeHelpers($this->class, $path, $this->filePrefix);
 
-        $cli->write('ok');
+        $cli->writeLine("{$path}_static.php created with static macros.");
+        $cli->writeLine("{$path}_instantiated.php created with instantiated macros.");
 
         return true;
     }
