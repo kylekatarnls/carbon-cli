@@ -5,10 +5,14 @@ namespace Carbon\Command;
 use Carbon\Cli;
 use Carbon\Types\Generator;
 use SimpleCli\Command;
+use SimpleCli\Options\Help;
+use SimpleCli\Options\Quiet;
 use SimpleCli\SimpleCli;
 
 class Macro implements Command
 {
+    use Help, Quiet;
+
     /**
      * @argument
      *

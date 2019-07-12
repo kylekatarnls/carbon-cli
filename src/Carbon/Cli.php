@@ -9,6 +9,11 @@ class Cli extends SimpleCli
 {
     protected $name = 'carbon';
 
+    public function getPackageName(): string
+    {
+        return 'nesbot/carbon';
+    }
+
     public function getCommands(): array
     {
         return [
