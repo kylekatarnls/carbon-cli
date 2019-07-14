@@ -1,0 +1,12 @@
+{
+  "config": {
+    "vendor-dir": "modules"
+  },
+  "extra": {
+    "carbon": {
+      "macros": [
+        "NS4\\Class4"
+      ]
+    }
+  }
+}

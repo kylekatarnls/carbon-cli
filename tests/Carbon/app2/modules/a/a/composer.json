@@ -1,0 +1,10 @@
+{
+  "extra": {
+    "carbon": {
+      "macros": [
+        "NS2\\Class2",
+        "NS3\\Class3"
+      ]
+    }
+  }
+}

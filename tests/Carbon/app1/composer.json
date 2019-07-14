@@ -1,0 +1,7 @@
+{
+  "extra": {
+    "carbon": {
+      "macros": ["NS5\\Class5"]
+    }
+  }
+}

@@ -5,6 +5,7 @@ namespace Carbon\Tests\Command;
 use Carbon\Cli;
 use Carbon\Tests\DummyMixin;
 use Carbon\Tests\DummyMixin2;
+use Carbon\Tests\SubMacro;
 use Carbon\Tests\TestCase;
 
 /**
@@ -68,5 +69,34 @@ class MacroTest extends TestCase
         $this->assertStringContainsString('public function foo()', $contents);
 
         $this->removeDirectory($dir);
+    }
+
+    /**
+     * @covers ::getComposerData
+     * @covers ::getCarbonMacrosFromData
+     * @covers ::addCarbonMacros
+     * @covers ::handleComposerConfig
+     */
+    public function testHandleComposerConfig()
+    {
+        $macro = new SubMacro();
+        chdir(__DIR__.'/../app1');
+        $macro->triggerComposerConfigHandle();
+
+        $this->assertSame([
+            'NS5\Class5',
+            'NS6\Class6',
+        ], $macro->getClasses());
+
+        $macro = new SubMacro();
+        chdir(__DIR__.'/../app2');
+        $macro->triggerComposerConfigHandle();
+
+        $this->assertSame([
+            'NS4\Class4',
+            'NS2\Class2',
+            'NS3\Class3',
+            'NS1\Class1',
+        ], $macro->getClasses());
     }
 }
