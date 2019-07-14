@@ -172,10 +172,8 @@ class Generator
      */
     protected function getMethodDocBlock(string $methodDocBlock, array $code, int $length, array $methodData): string
     {
-        [$name, $className, $defaultClasses] = $methodData;
-
         if (
-            ($method = $this->getNextMethod($code, $name, $className, $defaultClasses, $length)) &&
+            ($method = $this->getNextMethod($code, $length, $methodData)) &&
             preg_match('/(\/\*\*[\s\S]+\*\/)\s+return\s/U', $this->getMethodSourceCode($method), $match)
         ) {
             $methodDocBlock = $match[1];
