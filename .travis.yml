@@ -8,7 +8,8 @@ cache:
 sudo: false
 
 install:
-  - travis_retry composer update --prefer-dist --prefer-stable --no-interaction --no-suggest
+  - if [[ $setup = 'nightly' ]]; then travis_retry composer update --prefer-dist --no-interaction --no-suggest --ignore-platform-reqs; fi
+  - if [[ $setup = 'basic' ]]; then travis_retry composer update --prefer-dist --prefer-stable --no-interaction --no-suggest; fi
 
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
@@ -23,6 +24,7 @@ after_success:
 
 env:
   global:
+    - setup=basic
     - CC_TEST_REPORTER_ID=a706e45a0731ff71fe03470fefba2e1469a856018f131d0aee0be3f26ec4fc16
 
 branches:
@@ -36,3 +38,4 @@ matrix:
     - php: '7.2'
     - php: '7.3'
     - php: nightly
+      env: setup=nightly
