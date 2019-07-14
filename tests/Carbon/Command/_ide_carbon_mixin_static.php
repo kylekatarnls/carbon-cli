@@ -13,6 +13,16 @@ namespace Carbon
         {
             // Content, see src/DummyMixin.php:15
         }
+
+        /**
+         * @see \DummyMixin2::sayBye
+         *
+         * Say "Bye!" to a given person name.
+         */
+        public static function sayBye(string $name)
+        {
+            // Content, see src/DummyMixin2.php:15
+        }
     }
 }
 
@@ -28,6 +38,16 @@ namespace Carbon
         public static function sayHi(string $name)
         {
             // Content, see src/DummyMixin.php:15
+        }
+
+        /**
+         * @see \DummyMixin2::sayBye
+         *
+         * Say "Bye!" to a given person name.
+         */
+        public static function sayBye(string $name)
+        {
+            // Content, see src/DummyMixin2.php:15
         }
     }
 }
@@ -45,6 +65,16 @@ namespace Illuminate\Support
         {
             // Content, see src/DummyMixin.php:15
         }
+
+        /**
+         * @see \DummyMixin2::sayBye
+         *
+         * Say "Bye!" to a given person name.
+         */
+        public static function sayBye(string $name)
+        {
+            // Content, see src/DummyMixin2.php:15
+        }
     }
 }
 
@@ -60,6 +90,16 @@ namespace Illuminate\Support\Facades
         public static function sayHi(string $name)
         {
             // Content, see src/DummyMixin.php:15
+        }
+
+        /**
+         * @see \DummyMixin2::sayBye
+         *
+         * Say "Bye!" to a given person name.
+         */
+        public static function sayBye(string $name)
+        {
+            // Content, see src/DummyMixin2.php:15
         }
     }
 }

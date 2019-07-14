@@ -4,6 +4,7 @@ namespace Carbon\Tests\Command;
 
 use Carbon\Cli;
 use Carbon\Tests\DummyMixin;
+use Carbon\Tests\DummyMixin2;
 use Carbon\Tests\TestCase;
 
 /**
@@ -26,7 +27,7 @@ class MacroTest extends TestCase
         chdir($dir);
         $cli = new Cli();
         $cli->mute();
-        $cli('carbon', 'macro', DummyMixin::class, '--source-path', __DIR__.'/..');
+        $cli('carbon', 'macro', DummyMixin::class, DummyMixin2::class, '--source-path', __DIR__.'/..');
 
         $this->assertSame([
             '.',

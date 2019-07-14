@@ -14,13 +14,13 @@ class Macro implements Command
     use Help, Quiet;
 
     /**
-     * @argument
+     * @rest
      *
      * The class name of the mixin of the boot file to load macro functions.
      *
-     * @var string
+     * @var string[]
      */
-    public $class;
+    public $classes;
 
     /**
      * @option filePrefix, file-prefix, f
@@ -46,7 +46,7 @@ class Macro implements Command
 
         $path = realpath($this->sourcePath);
         $generator = new Generator();
-        $generator->writeHelpers($this->class, $path, $this->filePrefix);
+        $generator->writeHelpers($this->classes, $path, $this->filePrefix);
 
         $cli->writeLine("{$path}_static.php created with static macros.");
         $cli->writeLine("{$path}_instantiated.php created with instantiated macros.");

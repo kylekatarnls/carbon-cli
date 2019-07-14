@@ -10,27 +10,29 @@ use ReflectionParameter;
 class Generator
 {
     /**
-     * @param Closure|string $boot
+     * @param (Closure|string)[] $boots
      *
      * @throws \ReflectionException
      *
      * @return mixed
      */
-    protected function getMethods($boot)
+    protected function getMethods($boots)
     {
-        if (is_string($boot)) {
-            if (class_exists($className = $boot)) {
-                $boot = function () use ($className) {
-                    Carbon::mixin(new $className());
-                };
-            } elseif (file_exists($file = $boot)) {
-                $boot = function () use ($file) {
-                    include $file;
-                };
+        foreach ($boots as $boot) {
+            if (is_string($boot)) {
+                if (class_exists($className = $boot)) {
+                    $boot = function () use ($className) {
+                        Carbon::mixin(new $className());
+                    };
+                } elseif (file_exists($file = $boot)) {
+                    $boot = function () use ($file) {
+                        include $file;
+                    };
+                }
             }
-        }
 
-        call_user_func($boot);
+            call_user_func($boot);
+        }
 
         $c = new ReflectionClass(Carbon::now());
         $macros = $c->getProperty('globalMacros');
@@ -40,21 +42,21 @@ class Generator
     }
 
     /**
-     * @param string        $source
-     * @param string        $defaultClass
+     * @param string   $source
+     * @param string[] $defaultClasses
      *
      * @throws \ReflectionException
      *
      * @return string
      */
-    protected function getMethodsDefinitions($source, $defaultClass)
+    protected function getMethodsDefinitions($source, $defaultClasses)
     {
         $methods = '';
         $source = str_replace('\\', '/', realpath($source));
         $sourceLength = strlen($source);
         $files = array();
 
-        foreach ($this->getMethods($defaultClass) as $name => $closure) {
+        foreach ($this->getMethods($defaultClasses) as $name => $closure) {
             try {
                 $function = new \ReflectionFunction($closure);
             } catch (\ReflectionException $e) {
@@ -139,15 +141,15 @@ class Generator
     }
 
     /**
-     * @param string   $defaultClass
+     * @param string[] $defaultClass
      * @param string   $source
      * @param string   $name
      *
      * @throws \ReflectionException
      */
-    public function writeHelpers($defaultClass, $source,  $name = 'types/_ide_carbon_mixin', array $classes = null)
+    public function writeHelpers($defaultClasses, $source,  $name = 'types/_ide_carbon_mixin', array $classes = null)
     {
-        $methods = $this->getMethodsDefinitions($source, $defaultClass);
+        $methods = $this->getMethodsDefinitions($source, $defaultClasses);
 
         $classes = $classes ?: [
             'Carbon\Carbon',
