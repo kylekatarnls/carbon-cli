@@ -20,4 +20,12 @@ class CliTest extends TestCase
             'macro' => Macro::class,
         ], (new Cli())->getCommands());
     }
+
+    /**
+     * @covers ::getPackageName
+     */
+    public function testGetPackageName()
+    {
+        $this->assertSame('nesbot/carbon', (new Cli())->getPackageName());
+    }
 }
