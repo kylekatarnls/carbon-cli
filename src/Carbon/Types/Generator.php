@@ -106,15 +106,15 @@ class Generator
     /**
      * @param string   $methodDocBlock
      * @param string[] $code
-     * @param string   $name
-     * @param string   $className
-     * @param string[] $defaultClasses
-     * @param int $length
+     * @param int      $length
+     * @param array    $methodData
      *
      * @return ReflectionMethod|null
      */
-    protected function getNextMethod(array $code, string $name, string $className, array $defaultClasses, int $length): ?ReflectionMethod
+    protected function getNextMethod(array $code, int $length, array $methodData): ?ReflectionMethod
     {
+        [$name, $className, $defaultClasses] = $methodData;
+
         for ($i = $length - 1; $i >= 0; $i--) {
             if (
                 preg_match('/^\s*(public|protected)\s+function\s+(\S+)\(.*\)(\s*\{)?$/', $code[$i], $match) &&
