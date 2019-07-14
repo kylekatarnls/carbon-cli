@@ -15,10 +15,20 @@ class MacroTest extends TestCase
 {
     /**
      * @covers ::run
+     * @covers \Carbon\Types\Generator::runBoot
+     * @covers \Carbon\Types\Generator::getClosureData
+     * @covers \Carbon\Types\Generator::getMethodDocBlock
+     * @covers \Carbon\Types\Generator::getMethodDoc
      * @covers \Carbon\Types\Generator::getMethods
      * @covers \Carbon\Types\Generator::getMethodsDefinitions
+     * @covers \Carbon\Types\Generator::getParameterName
+     * @covers \Carbon\Types\Generator::getParameterNameAndType
      * @covers \Carbon\Types\Generator::dumpParameter
      * @covers \Carbon\Types\Generator::dumpValue
+     * @covers \Carbon\Types\Generator::getReflectionMethod
+     * @covers \Carbon\Types\Generator::getNextMethod
+     * @covers \Carbon\Types\Generator::loadFileLines
+     * @covers \Carbon\Types\Generator::getMethodSourceCode
      * @covers \Carbon\Types\Generator::writeHelpers
      */
     public function testRun()
@@ -49,10 +59,20 @@ class MacroTest extends TestCase
 
     /**
      * @covers ::run
+     * @covers \Carbon\Types\Generator::runBoot
+     * @covers \Carbon\Types\Generator::getClosureData
+     * @covers \Carbon\Types\Generator::getMethodDocBlock
+     * @covers \Carbon\Types\Generator::getMethodDoc
      * @covers \Carbon\Types\Generator::getMethods
      * @covers \Carbon\Types\Generator::getMethodsDefinitions
+     * @covers \Carbon\Types\Generator::getParameterName
+     * @covers \Carbon\Types\Generator::getParameterNameAndType
      * @covers \Carbon\Types\Generator::dumpParameter
      * @covers \Carbon\Types\Generator::dumpValue
+     * @covers \Carbon\Types\Generator::getReflectionMethod
+     * @covers \Carbon\Types\Generator::getNextMethod
+     * @covers \Carbon\Types\Generator::loadFileLines
+     * @covers \Carbon\Types\Generator::getMethodSourceCode
      * @covers \Carbon\Types\Generator::writeHelpers
      */
     public function testRunWithFile()

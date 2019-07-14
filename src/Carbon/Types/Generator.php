@@ -5,33 +5,47 @@ namespace Carbon\Types;
 use Carbon\Carbon;
 use Closure;
 use ReflectionClass;
+use ReflectionMethod;
 use ReflectionParameter;
 
 class Generator
 {
     /**
+     * @var string[][]
+     */
+    protected $files = [];
+
+    /**
+     * @param Closure|string $boot
+     */
+    protected function runBoot($boot): void
+    {
+        if (is_string($boot)) {
+            if (class_exists($className = $boot)) {
+                $boot = function () use ($className) {
+                    Carbon::mixin(new $className());
+                };
+            } elseif (file_exists($file = $boot)) {
+                $boot = function () use ($file) {
+                    include $file;
+                };
+            }
+        }
+
+        call_user_func($boot);
+    }
+
+    /**
      * @param (Closure|string)[] $boots
      *
+     * @return mixed
      * @throws \ReflectionException
      *
-     * @return mixed
      */
     protected function getMethods($boots)
     {
         foreach ($boots as $boot) {
-            if (is_string($boot)) {
-                if (class_exists($className = $boot)) {
-                    $boot = function () use ($className) {
-                        Carbon::mixin(new $className());
-                    };
-                } elseif (file_exists($file = $boot)) {
-                    $boot = function () use ($file) {
-                        include $file;
-                    };
-                }
-            }
-
-            call_user_func($boot);
+            $this->runBoot($boot);
         }
 
         $c = new ReflectionClass(Carbon::now());
@@ -42,112 +56,203 @@ class Generator
     }
 
     /**
-     * @param string   $source
+     * @param $closure
+     * @param string $source
+     * @param int $sourceLength
+     *
+     * @return array|bool
+     */
+    protected function getClosureData($closure, string $source, int $sourceLength)
+    {
+        try {
+            $function = new \ReflectionFunction($closure);
+        } catch (\ReflectionException $e) {
+            return false;
+        }
+
+        $file = $function->getFileName();
+
+        if (!isset($this->files[$file])) {
+            $this->files[$file] = file($file);
+        }
+
+        $lines = $this->files[$file];
+        $file = str_replace('\\', '/', $file);
+
+        return substr($file, 0, $sourceLength + 1) === "$source/"
+            ? [$function, $file, $lines]
+            : false;
+    }
+
+    /**
+     * @param string   $className
+     * @param string   $name
      * @param string[] $defaultClasses
      *
-     * @throws \ReflectionException
+     * @return ReflectionMethod|null
+     */
+    protected function getReflectionMethod(string $className, string $name, array $defaultClasses): ?ReflectionMethod
+    {
+        array_unshift($defaultClasses, $className);
+
+        foreach ($defaultClasses as $defaultClass) {
+            try {
+                return new ReflectionMethod($defaultClass, $name);
+            } catch (\ReflectionException $e) {
+            }
+        }
+    }
+
+    /**
+     * @param string   $methodDocBlock
+     * @param string[] $code
+     * @param string   $name
+     * @param string   $className
+     * @param string[] $defaultClasses
+     * @param int $length
+     *
+     * @return ReflectionMethod|null
+     */
+    protected function getNextMethod(array $code, string $name, string $className, array $defaultClasses, int $length): ?ReflectionMethod
+    {
+        for ($i = $length - 1; $i >= 0; $i--) {
+            if (
+                preg_match('/^\s*(public|protected)\s+function\s+(\S+)\(.*\)(\s*\{)?$/', $code[$i], $match) &&
+                ($name !== $match[2]) &&
+                ($method = $this->getReflectionMethod($className, $name, $defaultClasses))
+            ) {
+                return $method;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $methodFile
+     *
+     * @return string[]
+     */
+    protected function loadFileLines(string $methodFile): array
+    {
+        if (!isset($this->files[$methodFile])) {
+            $this->files[$methodFile] = file($methodFile);
+        }
+
+        return $this->files[$methodFile];
+    }
+
+    /**
+     * @param ReflectionMethod $method
      *
      * @return string
      */
+    protected function getMethodSourceCode(ReflectionMethod $method): string
+    {
+        $length = $method->getEndLine() - 1;
+        $code = array_slice($this->loadFileLines($method->getFileName()), 0, $length);
+
+        for ($i = $length - 1; $i >= 0; $i--) {
+            if (preg_match('/^\s*(public|protected)\s+function\s+(\S+)\(.*\)(\s*\{)?$/', $code[$i])) {
+                break;
+            }
+        }
+
+        return implode('', array_slice($code, $i));
+    }
+
+    /**
+     * @param array  $files
+     * @param string $methodDocBlock
+     * @param array  $code
+     * @param int    $length
+     * @param array  $methodData
+     *
+     * @return string
+     */
+    protected function getMethodDocBlock(string $methodDocBlock, array $code, int $length, array $methodData): string
+    {
+        [$name, $className, $defaultClasses] = $methodData;
+
+        if (
+            ($method = $this->getNextMethod($code, $name, $className, $defaultClasses, $length)) &&
+            preg_match('/(\/\*\*[\s\S]+\*\/)\s+return\s/U', $this->getMethodSourceCode($method), $match)
+        ) {
+            $methodDocBlock = $match[1];
+        }
+
+        return (string) preg_replace('/^ +\*/m', '         *', $methodDocBlock);
+    }
+
+    /**
+     * @param string $methodDocBlock
+     * @param string $className
+     * @param string $prototype
+     * @param string $file
+     *
+     * @return string
+     */
+    protected function getMethodDoc(string $methodDocBlock, string $className, string $prototype, string $file): string
+    {
+        $doc = '';
+
+        if ($methodDocBlock !== '') {
+            $methodDocBlock = str_replace('/**', "/**\n         * @see $className\n         *", $methodDocBlock);
+            $doc .= "        $methodDocBlock\n";
+        }
+
+        return "$doc        public static function $prototype\n".
+            "        {\n".
+            "            // Content, see src/$file\n".
+            "        }\n";
+    }
+
+    /**
+     * @param string $source
+     * @param string[] $defaultClasses
+     *
+     * @return string
+     * @throws \ReflectionException
+     *
+     */
     protected function getMethodsDefinitions($source, $defaultClasses)
     {
-        $methods = '';
+        $methods = [];
         $source = str_replace('\\', '/', realpath($source));
         $sourceLength = strlen($source);
-        $files = array();
 
         foreach ($this->getMethods($defaultClasses) as $name => $closure) {
-            try {
-                $function = new \ReflectionFunction($closure);
-            } catch (\ReflectionException $e) {
+            $closureData = $this->getClosureData($closure, $source, $sourceLength);
+
+            if ($closureData === false) {
                 continue;
             }
 
-            $file = $function->getFileName();
-
-            if (!isset($files[$file])) {
-                $files[$file] = file($file);
-            }
-
-            $lines = $files[$file];
-            $file = str_replace('\\', '/', $file);
-
-            if (substr($file, 0, $sourceLength + 1) !== "$source/") {
-                continue;
-            }
-
+            [$function, $file, $lines] = $closureData;
             $file = substr($file, $sourceLength + 1);
-            $parameters = implode(', ', array_map(array($this, 'dumpParameter'), $function->getParameters()));
+            $parameters = implode(', ', array_map([$this, 'dumpParameter'], $function->getParameters()));
             $methodDocBlock = trim($function->getDocComment() ?: '');
             $length = $function->getStartLine() - 1;
             $code = array_slice($lines, 0, $length);
             $className = '\\'.str_replace('/', '\\', substr($file, 0, -4));
 
-            for ($i = $length - 1; $i >= 0; $i--) {
-                if (preg_match('/^\s*(public|protected)\s+function\s+(\S+)\(.*\)(\s*\{)?$/', $code[$i], $match)) {
-                    if ($name !== $match[2]) {
-                        try {
-                            $method = new \ReflectionMethod($className, $name);
-                        } catch (\ReflectionException $e) {
-                            $method = new \ReflectionMethod($defaultClass, $name);
-                        }
-
-                        $methodFile = $method->getFileName();
-
-                        if (!isset($files[$methodFile])) {
-                            $files[$methodFile] = file($methodFile);
-                        }
-
-                        $length = $method->getEndLine() - 1;
-                        $lines = $files[$methodFile];
-                        $code = array_slice($lines, 0, $length);
-
-                        for ($i = $length - 1; $i >= 0; $i--) {
-                            if (preg_match('/^\s*(public|protected)\s+function\s+(\S+)\(.*\)(\s*\{)?$/', $code[$i], $match)) {
-                                break;
-                            }
-                        }
-
-                        $code = implode('', array_slice($code, $i));
-
-                        if (preg_match('/(\/\*\*[\s\S]+\*\/)\s+return\s/U', $code, $match)) {
-                            $methodDocBlock = $match[1];
-                        }
-                    }
-
-                    break;
-                }
-            }
-
-            $methodDocBlock = preg_replace('/^ +\*/m', '         *', $methodDocBlock);
+            $methodDocBlock = $this->getMethodDocBlock($methodDocBlock, $code, $length, [$name, $className, $defaultClasses]);
             $file .= ':'.$function->getStartLine();
 
-            if ($methods !== '') {
-                $methods .= "\n";
-            }
-
-            if ($methodDocBlock !== '') {
-                $methodDocBlock = str_replace('/**', "/**\n         * @see $className::$name\n         *", $methodDocBlock);
-                $methods .= "        $methodDocBlock\n";
-            }
-
-            $methods .= "        public static function $name($parameters)\n".
-                "        {\n".
-                "            // Content, see src/$file\n".
-                "        }\n";
+            $methods[] = $this->getMethodDoc($methodDocBlock, "$className::$name", "$name($parameters)", $file);
         }
 
-        return $methods;
+        return implode("\n", $methods);
     }
 
     /**
      * @param string[] $defaultClass
-     * @param string   $source
-     * @param string   $name
+     * @param string $source
+     * @param string $name
      *
      * @throws \ReflectionException
      */
-    public function writeHelpers($defaultClasses, $source,  $name = 'types/_ide_carbon_mixin', array $classes = null)
+    public function writeHelpers($defaultClasses, $source, $name = 'types/_ide_carbon_mixin', array $classes = null)
     {
         $methods = $this->getMethodsDefinitions($source, $defaultClasses);
 
@@ -193,7 +298,7 @@ class Generator
         return $value;
     }
 
-    protected function dumpParameter(ReflectionParameter $parameter)
+    protected function getParameterName(ReflectionParameter $parameter)
     {
         $name = $parameter->getName();
         $output = '$'.$name;
@@ -202,14 +307,30 @@ class Generator
             $output = "...$output";
         }
 
+        return $output;
+    }
+
+    protected function getParameterNameAndType(ReflectionParameter $parameter)
+    {
+        $output = $this->getParameterName($parameter);
+
         if ($parameter->getType()) {
             $name = $parameter->getType()->getName();
+
             if (preg_match('/^[A-Z]/', $name)) {
                 $name = "\\$name";
             }
+
             $name = preg_replace('/^\\\\Carbon\\\\/', '', $name);
             $output = "$name $output";
         }
+
+        return $output;
+    }
+
+    protected function dumpParameter(ReflectionParameter $parameter)
+    {
+        $output = $this->getParameterNameAndType($parameter);
 
         try {
             if ($parameter->isDefaultValueAvailable()) {
