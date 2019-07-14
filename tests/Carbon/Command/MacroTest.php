@@ -49,6 +49,9 @@ class MacroTest extends TestCase
 
     /**
      * @covers ::run
+     * @covers \Carbon\Types\Generator::getClosureData
+     * @covers \Carbon\Types\Generator::getMethodDocBlock
+     * @covers \Carbon\Types\Generator::writeMethodsDoc
      * @covers \Carbon\Types\Generator::getMethods
      * @covers \Carbon\Types\Generator::getMethodsDefinitions
      * @covers \Carbon\Types\Generator::dumpParameter
