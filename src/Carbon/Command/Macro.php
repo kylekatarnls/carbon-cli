@@ -38,7 +38,7 @@ class Macro implements Command
      *
      * @var string
      */
-    public $sourcePath = 'src';
+    public $sourcePath = '.';
 
     /**
      * @option
