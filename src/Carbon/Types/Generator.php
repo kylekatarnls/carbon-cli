@@ -243,8 +243,12 @@ class Generator
             $methodDocBlock = $this->getMethodDocBlock($methodDocBlock, $code, $length, [$name, $className, $defaultClasses]);
             $file .= ':'.$function->getStartLine();
             $returnType = $function->getReturnType();
-            $returnDump = $returnType instanceof ReflectionNamedType ? $returnType->getName() : $returnType->__toString();
-            $return = $function->hasReturnType() ? ': '.($returnType->allowsNull() ? '?' : '').$returnDump : '';
+            $return = '';
+
+            if ($function->hasReturnType()) {
+                $returnDump = $returnType instanceof ReflectionNamedType ? $returnType->getName() : $returnType->__toString();
+                $return = ': '.($returnType->allowsNull() ? '?' : '').$returnDump;
+            }
 
             $methods[] = $this->getMethodDoc($methodDocBlock, "$className::$name", "$name($parameters)$return", $file);
         }
