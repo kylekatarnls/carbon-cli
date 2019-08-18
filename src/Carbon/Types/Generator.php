@@ -5,7 +5,10 @@ namespace Carbon\Types;
 use Carbon\Carbon;
 use Closure;
 use ReflectionClass;
+use ReflectionException;
+use ReflectionFunction;
 use ReflectionMethod;
+use ReflectionNamedType;
 use ReflectionParameter;
 
 class Generator
@@ -39,7 +42,7 @@ class Generator
      * @param (Closure|string)[] $boots
      *
      * @return mixed
-     * @throws \ReflectionException
+     * @throws ReflectionException
      *
      */
     protected function getMethods($boots)
@@ -65,8 +68,8 @@ class Generator
     protected function getClosureData($closure, string $source, int $sourceLength)
     {
         try {
-            $function = new \ReflectionFunction($closure);
-        } catch (\ReflectionException $e) {
+            $function = new ReflectionFunction($closure);
+        } catch (ReflectionException $e) {
             return false;
         }
 
@@ -98,7 +101,7 @@ class Generator
         foreach ($defaultClasses as $defaultClass) {
             try {
                 return new ReflectionMethod($defaultClass, $name);
-            } catch (\ReflectionException $e) {
+            } catch (ReflectionException $e) {
             }
         }
     }
@@ -210,7 +213,7 @@ class Generator
      * @param string[] $defaultClasses
      *
      * @return string
-     * @throws \ReflectionException
+     * @throws ReflectionException
      *
      */
     protected function getMethodsDefinitions($source, $defaultClasses)
@@ -227,7 +230,7 @@ class Generator
             }
 
             /**
-             * @var $function \ReflectionFunction
+             * @var $function ReflectionFunction
              */
             [$function, $file, $lines] = $closureData;
             $file = substr($file, $sourceLength + 1);
@@ -239,7 +242,9 @@ class Generator
 
             $methodDocBlock = $this->getMethodDocBlock($methodDocBlock, $code, $length, [$name, $className, $defaultClasses]);
             $file .= ':'.$function->getStartLine();
-            $return = $function->hasReturnType() ? ': '.$function->getReturnType() : '';
+            $returnType = $function->getReturnType();
+            $returnDump = $returnType instanceof ReflectionNamedType ? $returnType->getName() : $returnType->__toString();
+            $return = $function->hasReturnType() ? ': '.($returnType->allowsNull() ? '?' : '').$returnDump : '';
 
             $methods[] = $this->getMethodDoc($methodDocBlock, "$className::$name", "$name($parameters)$return", $file);
         }
@@ -252,7 +257,7 @@ class Generator
      * @param string $source
      * @param string $name
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function writeHelpers($defaultClasses, $source, $name = 'types/_ide_carbon_mixin', array $classes = null)
     {
@@ -338,7 +343,7 @@ class Generator
             if ($parameter->isDefaultValueAvailable()) {
                 $output .= ' = '.$this->dumpValue($parameter->getDefaultValue());
             }
-        } catch (\ReflectionException $exp) {
+        } catch (ReflectionException $exp) {
         }
 
         return $output;

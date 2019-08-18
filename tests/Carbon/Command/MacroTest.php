@@ -117,13 +117,13 @@ class MacroTest extends TestCase
         $dir = sys_get_temp_dir().'/macro-test-'.mt_rand(0, 999999);
         @mkdir($dir);
         chdir($dir);
-        file_put_contents('bar.php', '<?php \Carbon\Carbon::macro(\'bar\', function (string $foo): string { return "foo: $foo"; });');
+        file_put_contents('bar.php', '<?php \Carbon\Carbon::macro(\'bar\', function (string $foo): ?string { if (strlen($foo)) { return "foo: $foo"; } });');
         $cli = new Cli();
         $cli->mute();
         $cli('carbon', 'macro', 'bar.php');
 
         $contents = file_get_contents("$dir/types/_ide_carbon_mixin_instantiated.php");
-        $this->assertStringContainsString('public function bar(string $foo): string', $contents);
+        $this->assertStringContainsString('public function bar(string $foo): ?string', $contents);
 
         $this->removeDirectory($dir);
     }
