@@ -226,6 +226,9 @@ class Generator
                 continue;
             }
 
+            /**
+             * @var $function \ReflectionFunction
+             */
             [$function, $file, $lines] = $closureData;
             $file = substr($file, $sourceLength + 1);
             $parameters = implode(', ', array_map([$this, 'dumpParameter'], $function->getParameters()));
@@ -236,8 +239,9 @@ class Generator
 
             $methodDocBlock = $this->getMethodDocBlock($methodDocBlock, $code, $length, [$name, $className, $defaultClasses]);
             $file .= ':'.$function->getStartLine();
+            $return = $function->hasReturnType() ? ': '.$function->getReturnType() : '';
 
-            $methods[] = $this->getMethodDoc($methodDocBlock, "$className::$name", "$name($parameters)", $file);
+            $methods[] = $this->getMethodDoc($methodDocBlock, "$className::$name", "$name($parameters)$return", $file);
         }
 
         return implode("\n", $methods);
