@@ -210,6 +210,28 @@ class Generator
     }
 
     /**
+     * @param ReflectionFunction $function
+     *
+     * @return string
+     */
+    protected function dumpReturnType(ReflectionFunction $function): string
+    {
+        $returnType = $function->getReturnType();
+
+        if (!$function->hasReturnType()) {
+            return '';
+        }
+
+        $returnDump = $this->getNormalizedType(
+            $returnType instanceof ReflectionNamedType
+                ? $returnType->getName()
+                : $returnType->__toString()
+        );
+
+        return ': '.($returnType->allowsNull() ? '?' : '').$returnDump;
+    }
+
+    /**
      * @param string $source
      * @param string[] $defaultClasses
      *
@@ -243,17 +265,7 @@ class Generator
 
             $methodDocBlock = $this->getMethodDocBlock($methodDocBlock, $code, $length, [$name, $className, $defaultClasses]);
             $file .= ':'.$function->getStartLine();
-            $returnType = $function->getReturnType();
-            $return = '';
-
-            if ($function->hasReturnType()) {
-                $returnDump = $this->getNormalizedType(
-                    $returnType instanceof ReflectionNamedType
-                        ? $returnType->getName()
-                        : $returnType->__toString()
-                );
-                $return = ': '.($returnType->allowsNull() ? '?' : '').$returnDump;
-            }
+            $return = $this->dumpReturnType($function);
 
             $methods[] = $this->getMethodDoc($methodDocBlock, "$className::$name", "$name($parameters)$return", $file);
         }
