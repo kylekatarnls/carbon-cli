@@ -21,6 +21,7 @@ class MacroTest extends TestCase
      * @covers \Carbon\Types\Generator::getMethodDocBlock
      * @covers \Carbon\Types\Generator::getMethodDoc
      * @covers \Carbon\Types\Generator::getMethods
+     * @covers \Carbon\Types\Generator::dumpReturnType
      * @covers \Carbon\Types\Generator::getMethodsDefinitions
      * @covers \Carbon\Types\Generator::getParameterName
      * @covers \Carbon\Types\Generator::getNormalizedType
@@ -65,6 +66,7 @@ class MacroTest extends TestCase
      * @covers \Carbon\Types\Generator::getMethodDocBlock
      * @covers \Carbon\Types\Generator::getMethodDoc
      * @covers \Carbon\Types\Generator::getMethods
+     * @covers \Carbon\Types\Generator::dumpReturnType
      * @covers \Carbon\Types\Generator::getMethodsDefinitions
      * @covers \Carbon\Types\Generator::getParameterName
      * @covers \Carbon\Types\Generator::getNormalizedType
@@ -100,6 +102,7 @@ class MacroTest extends TestCase
      * @covers \Carbon\Types\Generator::getMethodDocBlock
      * @covers \Carbon\Types\Generator::getMethodDoc
      * @covers \Carbon\Types\Generator::getMethods
+     * @covers \Carbon\Types\Generator::dumpReturnType
      * @covers \Carbon\Types\Generator::getMethodsDefinitions
      * @covers \Carbon\Types\Generator::getParameterName
      * @covers \Carbon\Types\Generator::getNormalizedType
@@ -191,6 +194,7 @@ class MacroTest extends TestCase
     }
 
     /**
+     * @covers \Carbon\Types\Generator::dumpReturnType
      * @covers \Carbon\Types\Generator::getMethodsDefinitions
      */
     public function testOutsideClosure()
