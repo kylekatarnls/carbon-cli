@@ -2,6 +2,7 @@
 
 namespace Carbon\Tests\Command;
 
+use Carbon\Carbon;
 use Carbon\Cli;
 use Carbon\Tests\DummyMixin;
 use Carbon\Tests\DummyMixin2;
@@ -77,6 +78,7 @@ class MacroTest extends TestCase
      */
     public function testRunWithFile()
     {
+        Carbon::resetMacros();
         $dir = sys_get_temp_dir().'/macro-test-'.mt_rand(0, 999999);
         @mkdir($dir);
         chdir($dir);
@@ -87,6 +89,41 @@ class MacroTest extends TestCase
 
         $contents = file_get_contents("$dir/types/_ide_carbon_mixin_instantiated.php");
         $this->assertStringContainsString('public function foo()', $contents);
+
+        $this->removeDirectory($dir);
+    }
+
+    /**
+     * @covers ::run
+     * @covers \Carbon\Types\Generator::runBoot
+     * @covers \Carbon\Types\Generator::getClosureData
+     * @covers \Carbon\Types\Generator::getMethodDocBlock
+     * @covers \Carbon\Types\Generator::getMethodDoc
+     * @covers \Carbon\Types\Generator::getMethods
+     * @covers \Carbon\Types\Generator::getMethodsDefinitions
+     * @covers \Carbon\Types\Generator::getParameterName
+     * @covers \Carbon\Types\Generator::getParameterNameAndType
+     * @covers \Carbon\Types\Generator::dumpParameter
+     * @covers \Carbon\Types\Generator::dumpValue
+     * @covers \Carbon\Types\Generator::getReflectionMethod
+     * @covers \Carbon\Types\Generator::getNextMethod
+     * @covers \Carbon\Types\Generator::loadFileLines
+     * @covers \Carbon\Types\Generator::getMethodSourceCode
+     * @covers \Carbon\Types\Generator::writeHelpers
+     */
+    public function testRunTyping()
+    {
+        Carbon::resetMacros();
+        $dir = sys_get_temp_dir().'/macro-test-'.mt_rand(0, 999999);
+        @mkdir($dir);
+        chdir($dir);
+        file_put_contents('bar.php', '<?php \Carbon\Carbon::macro(\'bar\', function (string $foo): ?string { if (strlen($foo)) { return "foo: $foo"; } });');
+        $cli = new Cli();
+        $cli->mute();
+        $cli('carbon', 'macro', 'bar.php');
+
+        $contents = file_get_contents("$dir/types/_ide_carbon_mixin_instantiated.php");
+        $this->assertStringContainsString('public function bar(string $foo): ?string', $contents);
 
         $this->removeDirectory($dir);
     }

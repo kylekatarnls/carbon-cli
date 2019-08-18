@@ -9,7 +9,7 @@ namespace Carbon
          *
          * Say "Hi!" to a given person name.
          */
-        public function sayHi(string $name)
+        public function sayHi(string $name): string
         {
             // Content, see src/DummyMixin.php:15
         }
@@ -19,7 +19,7 @@ namespace Carbon
          *
          * Say "Bye!" to a given person name.
          */
-        public function sayBye(string $name)
+        public function sayBye(string $name): string
         {
             // Content, see src/DummyMixin2.php:15
         }
@@ -35,7 +35,7 @@ namespace Carbon
          *
          * Say "Hi!" to a given person name.
          */
-        public function sayHi(string $name)
+        public function sayHi(string $name): string
         {
             // Content, see src/DummyMixin.php:15
         }
@@ -45,7 +45,7 @@ namespace Carbon
          *
          * Say "Bye!" to a given person name.
          */
-        public function sayBye(string $name)
+        public function sayBye(string $name): string
         {
             // Content, see src/DummyMixin2.php:15
         }
@@ -61,7 +61,7 @@ namespace Illuminate\Support
          *
          * Say "Hi!" to a given person name.
          */
-        public function sayHi(string $name)
+        public function sayHi(string $name): string
         {
             // Content, see src/DummyMixin.php:15
         }
@@ -71,7 +71,7 @@ namespace Illuminate\Support
          *
          * Say "Bye!" to a given person name.
          */
-        public function sayBye(string $name)
+        public function sayBye(string $name): string
         {
             // Content, see src/DummyMixin2.php:15
         }
@@ -87,7 +87,7 @@ namespace Illuminate\Support\Facades
          *
          * Say "Hi!" to a given person name.
          */
-        public function sayHi(string $name)
+        public function sayHi(string $name): string
         {
             // Content, see src/DummyMixin.php:15
         }
@@ -97,7 +97,7 @@ namespace Illuminate\Support\Facades
          *
          * Say "Bye!" to a given person name.
          */
-        public function sayBye(string $name)
+        public function sayBye(string $name): string
         {
             // Content, see src/DummyMixin2.php:15
         }
