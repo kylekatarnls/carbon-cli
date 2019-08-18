@@ -104,6 +104,8 @@ class Generator
             } catch (ReflectionException $e) {
             }
         }
+
+        return null;
     }
 
     /**
@@ -116,13 +118,12 @@ class Generator
      */
     protected function getNextMethod(array $code, int $length, array $methodData): ?ReflectionMethod
     {
-        [$name, $className, $defaultClasses] = $methodData;
+        [, $className, $defaultClasses] = $methodData;
 
         for ($i = $length - 1; $i >= 0; $i--) {
             if (
                 preg_match('/^\s*(public|protected)\s+function\s+(\S+)\(.*\)(\s*\{)?$/', $code[$i], $match) &&
-                ($name !== $match[2]) &&
-                ($method = $this->getReflectionMethod($className, $name, $defaultClasses))
+                ($method = $this->getReflectionMethod($className, $match[2], $defaultClasses))
             ) {
                 return $method;
             }
@@ -246,7 +247,11 @@ class Generator
             $return = '';
 
             if ($function->hasReturnType()) {
-                $returnDump = $returnType instanceof ReflectionNamedType ? $returnType->getName() : $returnType->__toString();
+                $returnDump = $this->getNormalizedType(
+                    $returnType instanceof ReflectionNamedType
+                        ? $returnType->getName()
+                        : $returnType->__toString()
+                );
                 $return = ': '.($returnType->allowsNull() ? '?' : '').$returnDump;
             }
 
@@ -321,18 +326,21 @@ class Generator
         return $output;
     }
 
+    protected function getNormalizedType(string $type)
+    {
+        if (preg_match('/^[A-Z]/', $type)) {
+            $type = "\\$type";
+        }
+
+        return preg_replace('/^\\\\Carbon\\\\/', '', $type);
+    }
+
     protected function getParameterNameAndType(ReflectionParameter $parameter)
     {
         $output = $this->getParameterName($parameter);
 
         if ($parameter->getType()) {
-            $name = $parameter->getType()->getName();
-
-            if (preg_match('/^[A-Z]/', $name)) {
-                $name = "\\$name";
-            }
-
-            $name = preg_replace('/^\\\\Carbon\\\\/', '', $name);
+            $name = $this->getNormalizedType($parameter->getType()->getName());
             $output = "$name $output";
         }
 
