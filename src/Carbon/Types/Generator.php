@@ -363,11 +363,10 @@ class Generator
     {
         $output = $this->getParameterNameAndType($parameter);
 
-        try {
-            if ($parameter->isDefaultValueAvailable()) {
-                $output .= ' = '.$this->dumpValue($parameter->getDefaultValue());
-            }
-        } catch (ReflectionException $exp) {
+        if ($parameter->isDefaultValueAvailable()) {
+            // getDefaultValue() cannot throw an exception as we checked isDefaultValueAvailable() first
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $output .= ' = '.$this->dumpValue($parameter->getDefaultValue());
         }
 
         return $output;

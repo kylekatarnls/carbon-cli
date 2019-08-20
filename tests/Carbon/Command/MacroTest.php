@@ -194,6 +194,26 @@ class MacroTest extends TestCase
     }
 
     /**
+     * @covers \Carbon\Types\Generator::dumpParameter
+     */
+    public function testRunDefaultValue()
+    {
+        Carbon::resetMacros();
+        $dir = sys_get_temp_dir().'/macro-test-'.mt_rand(0, 999999);
+        @mkdir($dir);
+        chdir($dir);
+        file_put_contents('bar.php', '<?php \Carbon\Carbon::macro(\'bar\', function ($foo = 9) { return $foo; });');
+        $cli = new Cli();
+        $cli->mute();
+        $cli('carbon', 'macro', 'bar.php');
+
+        $contents = file_get_contents("$dir/types/_ide_carbon_mixin_instantiated.php");
+        $this->assertStringContainsString('public function bar($foo = 9)', $contents);
+
+        $this->removeDirectory($dir);
+    }
+
+    /**
      * @covers \Carbon\Types\Generator::dumpReturnType
      * @covers \Carbon\Types\Generator::getMethodsDefinitions
      */

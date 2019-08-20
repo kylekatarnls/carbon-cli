@@ -43,6 +43,26 @@ class GeneratorTest extends TestCase
     }
 
     /**
+     * @covers ::loadFileLines
+     * @covers ::getMethodSourceCode
+     */
+    public function testGetMethodSourceCode()
+    {
+        $generator = new Generator();
+        $method = new ReflectionMethod(Generator::class, 'getMethodSourceCode');
+        $method->setAccessible(true);
+
+        $object = require __DIR__.'/../outside/class.php';
+        // ReflectionMethod cannot throw an exception as outside/class.php is always a valid class
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $foo = new ReflectionMethod(get_class($object), 'foo');
+
+        $sourceCode = $method->invoke($generator, $foo);
+
+        $this->assertRegExp('/public function foo\(\)\s*\{\s*return \'hello\';/', $sourceCode);
+    }
+
+    /**
      * @covers ::getNextMethod
      */
     public function testGetNextMethod()
