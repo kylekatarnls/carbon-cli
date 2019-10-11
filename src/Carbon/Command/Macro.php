@@ -94,6 +94,8 @@ class Macro implements Command
         $generator = new Generator();
         $generator->writeHelpers($this->classes, $path, $this->filePrefix);
 
+        $path .= DIRECTORY_SEPARATOR.preg_replace('`[/\\\\]`', DIRECTORY_SEPARATOR, $this->filePrefix);
+
         $cli->writeLine("{$path}_static.php created with static macros.");
         $cli->writeLine("{$path}_instantiated.php created with instantiated macros.");
 
