@@ -58,8 +58,9 @@ class GeneratorTest extends TestCase
         $foo = new ReflectionMethod(get_class($object), 'foo');
 
         $sourceCode = $method->invoke($generator, $foo);
+        $match = (preg_match('/public function foo\(\)\s*\{\s*return \'hello\';/', $sourceCode) > 0);
 
-        $this->assertRegExp('/public function foo\(\)\s*\{\s*return \'hello\';/', $sourceCode);
+        $this->assertTrue($match, 'Source code must contain foo method returning "hello".');
     }
 
     /**

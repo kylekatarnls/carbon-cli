@@ -48,16 +48,20 @@ jobs:
 
       - name: Set PHPUnit version
         if: matrix.php >= 8.1
-        run: composer require "phpunit/phpunit:^8.5.41" --no-update
+        run: composer require "phpunit/phpunit:^9.6.22" --no-update
 
       - name: Install Dependencies
         run: composer update --prefer-dist --prefer-${{ matrix.setup }} --no-interaction --no-suggest
 
+      - name: Run Tests with coverage
+        if: matrix.php == 8.4 && matrix.setup == 'stable'
+        run: vendor/bin/phpunit --coverage-clover=clover.xml --coverage-text --log-junit=test-results.xml
+
       - name: Run Tests
-        run: vendor/bin/phpunit ${{ matrix.php == 8.4 && matrix.setup == 'stable' && '--coverage-clover=clover.xml --coverage-text --log-junit test-results.xml' || '' }}
+        if: matrix.php != 8.4 || matrix.setup != 'stable'
+        run: vendor/bin/phpunit --log-junit=test-results.xml
 
       - name: Upload Test Results
-        if: matrix.php == 8.4 && matrix.setup == 'stable'
         uses: actions/upload-artifact@v4
         with:
           name: "${{ matrix.php-version }}-phpunit-results"
