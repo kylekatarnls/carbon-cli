@@ -1,0 +1,7 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - gh-pages
+      - "**"

@@ -31,11 +31,6 @@ env:
     - setup=basic
     - CC_TEST_REPORTER_ID=a706e45a0731ff71fe03470fefba2e1469a856018f131d0aee0be3f26ec4fc16
 
-branches:
-  only:
-    - gh-pages
-    - /.*/
-
 matrix:
   include:
     - php: '7.1'
