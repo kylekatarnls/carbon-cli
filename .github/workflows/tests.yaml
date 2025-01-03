@@ -11,6 +11,9 @@ jobs:
     name: PHP Test Matrix
     runs-on: ubuntu-latest
 
+    env:
+      CC_TEST_REPORTER_ID: a706e45a0731ff71fe03470fefba2e1469a856018f131d0aee0be3f26ec4fc16
+
     strategy:
       matrix:
         php-version: [7.1, 7.2, 7.3]
@@ -43,4 +46,10 @@ jobs:
           elif [ "${{ matrix.setup }}" == "basic" ]; then
             composer update --prefer-dist --prefer-stable --no-interaction --no-suggest;
           fi
+
+      - name: Download Code Climate Test Reporter
+        run: |
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          chmod +x ./cc-test-reporter
+          ./cc-test-reporter before-build
 

@@ -1,10 +1,5 @@
 language: php
 
-before_script:
-  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-  - chmod +x ./cc-test-reporter
-  - ./cc-test-reporter before-build
-
 script:
   - vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-text
 
@@ -14,7 +9,3 @@ after_success:
 after_script:
   - cp coverage.xml clover.xml
   - ./cc-test-reporter after-build --coverage-input-type clover --exit-code $TRAVIS_TEST_RESULT
-
-env:
-  global:
-    - CC_TEST_REPORTER_ID=a706e45a0731ff71fe03470fefba2e1469a856018f131d0aee0be3f26ec4fc16
