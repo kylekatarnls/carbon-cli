@@ -32,12 +32,19 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           tools: composer
+          coverage: ${{ matrix.php == 8.4 && matrix.setup && 'pcov' || 'none' }}
+
+      - name: Get composer cache directory
+        id: composer-cache
+        shell: bash
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache/Restore Composer
         uses: actions/cache@v4
         with:
-          path: ~/.composer/cache
-          key: ${{ runner.os }}-${{ matrix.php }}-${{ matrix.setup }}-composer-${{ hashFiles('**/composer.lock') }}
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: "php-${{ matrix.php }}-${{ matrix.setup }}-${{ matrix.os }}-${{ matrix.phpunit }}-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "php-${{ matrix.php }}-${{ matrix.setup }}-${{ matrix.os }}-${{ matrix.phpunit }}-${{ hashFiles('**/composer.json') }}"
 
       - name: Set PHPUnit version
         if: matrix.php >= 8.1
@@ -47,17 +54,17 @@ jobs:
         run: composer update --prefer-dist --prefer-${{ matrix.setup }} --no-interaction --no-suggest
 
       - name: Run Tests
-        run: vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-text --log-junit test-results.xml
+        run: vendor/bin/phpunit ${{ matrix.php == 8.4 && matrix.setup == 'stable' && "--coverage-clover=clover.xml --coverage-text --log-junit test-results.xml" || "" }}
 
       - name: Upload Test Results
-        if: matrix.php == 7.4 && matrix.setup == 'stable'
+        if: matrix.php == 8.4 && matrix.setup == 'stable'
         uses: actions/upload-artifact@v4
         with:
           name: "${{ matrix.php-version }}-phpunit-results"
           path: test-results.xml
 
       - name: Code Climate Test Reporter
-        if: matrix.php == 7.4 && matrix.setup == 'stable'
+        if: matrix.php == 8.4 && matrix.setup == 'stable'
         uses: aktions/codeclimate-test-reporter@v1
         with:
           codeclimate-test-reporter-id: ${{ secrets.CC_TEST_REPORTER_ID }}
@@ -67,5 +74,5 @@ jobs:
         continue-on-error: true
 
       - name: Coverage
-        if: matrix.php == 7.4 && matrix.setup == 'stable'
+        if: matrix.php == 8.4 && matrix.setup == 'stable'
         uses: codecov/codecov-action@v5
