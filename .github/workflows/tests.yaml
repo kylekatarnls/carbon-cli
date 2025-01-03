@@ -5,3 +5,17 @@ on:
     branches:
       - gh-pages
       - "**"
+
+jobs:
+  test:
+    name: PHP Test Matrix
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-version: [7.1, 7.2, 7.3]
+        setup: [basic]
+        include:
+          - php-version: nightly
+            setup: nightly
+      fail-fast: false
