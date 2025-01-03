@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: PHP Test Matrix
+    name: Test - PHP ${{ matrix.php }} - ${{ matrix.setup }}
     runs-on: ubuntu-latest
 
     env:
@@ -16,59 +16,52 @@ jobs:
 
     strategy:
       matrix:
-        php-version: [7.1, 7.2, 7.3]
-        setup: [basic]
+        php: [7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, 8.3, 8.4]
+        setup: [lowest, stable]
         include:
-          - php-version: nightly
-            setup: nightly
+          - php: nightly
+            setup: stable
       fail-fast: false
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+          php-version: ${{ matrix.php }}
           tools: composer
 
       - name: Cache/Restore Composer
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.composer/cache
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-${{ matrix.php }}-${{ matrix.setup }}-composer-${{ hashFiles('**/composer.lock') }}
 
       - name: Install Dependencies
-        run: |
-          if [ "${{ matrix.setup }}" == "nightly" ]; then
-            composer update --prefer-dist --no-interaction --no-suggest --ignore-platform-reqs;
-          elif [ "${{ matrix.setup }}" == "basic" ]; then
-            composer update --prefer-dist --prefer-stable --no-interaction --no-suggest;
-          fi
-
-      - name: Download Code Climate Test Reporter
-        run: |
-          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-          chmod +x ./cc-test-reporter
-          ./cc-test-reporter before-build
+        run: composer update --prefer-dist --prefer-${{ matrix.setup }} --no-interaction --no-suggest
 
       - name: Run Tests
         run: vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-text --log-junit test-results.xml
 
       - name: Upload Test Results
+        if: matrix.php == 7.4 && matrix.setup == 'stable'
         uses: actions/upload-artifact@v4
         with:
           name: "${{ matrix.php-version }}-phpunit-results"
           path: test-results.xml
-        if: ${{ always() }}
 
-      - name: Upload Coverage to Codecov
-        if: success()
-        run: bash <(curl -s https://codecov.io/bash)
+      - name: Code Climate Test Reporter
+        if: matrix.php == 7.4 && matrix.setup == 'stable'
+        uses: aktions/codeclimate-test-reporter@v1
+        with:
+          codeclimate-test-reporter-id: ${{ secrets.CC_TEST_REPORTER_ID }}
+          command: after-build -t clover
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+        continue-on-error: true
 
-      - name: Finalize Code Climate Report
-        run: |
-          cp coverage.xml clover.xml
-          EXIT_CODE=$([ "${{ steps.test.outcome }}" == "success" ] && echo 0 || echo 1)
-          ./cc-test-reporter after-build --coverage-input-type clover --exit-code $EXIT_CODE
+      - name: Coverage
+        if: matrix.php == 7.4 && matrix.setup == 'stable'
+        uses: codecov/codecov-action@v5
