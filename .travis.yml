@@ -1,16 +1,5 @@
 language: php
 
-cache:
-  apt: true
-  directories:
-    - $HOME/.composer/cache
-
-sudo: false
-
-install:
-  - if [[ $setup = 'nightly' ]]; then travis_retry composer update --prefer-dist --no-interaction --no-suggest --ignore-platform-reqs; fi
-  - if [[ $setup = 'basic' ]]; then travis_retry composer update --prefer-dist --prefer-stable --no-interaction --no-suggest; fi
-
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter

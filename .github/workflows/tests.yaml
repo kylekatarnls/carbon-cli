@@ -19,3 +19,28 @@ jobs:
           - php-version: nightly
             setup: nightly
       fail-fast: false
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: composer
+
+      - name: Cache/Restore Composer
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+
+      - name: Install Dependencies
+        run: |
+          if [ "${{ matrix.setup }}" == "nightly" ]; then
+            composer update --prefer-dist --no-interaction --no-suggest --ignore-platform-reqs;
+          elif [ "${{ matrix.setup }}" == "basic" ]; then
+            composer update --prefer-dist --prefer-stable --no-interaction --no-suggest;
+          fi
+
