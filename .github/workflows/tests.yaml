@@ -57,7 +57,7 @@ jobs:
         run: vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-text --log-junit test-results.xml
 
       - name: Upload Test Results
-        uses: action/upload-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: phpunit-test-results
           path: test-results.xml
