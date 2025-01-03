@@ -63,5 +63,5 @@ jobs:
       - name: Finalize Code Climate Report
         run: |
           cp coverage.xml clover.xml
-          EXIT_CODE=$([ ${{ success() }} ] && echo 0 || echo 1)
+          EXIT_CODE=$([ "${{ steps.test.outcome }}" == "success" ] && echo 0 || echo 1)
           ./cc-test-reporter after-build --coverage-input-type clover --exit-code $EXIT_CODE
