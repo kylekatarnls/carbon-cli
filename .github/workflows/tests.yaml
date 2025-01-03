@@ -39,6 +39,10 @@ jobs:
           path: ~/.composer/cache
           key: ${{ runner.os }}-${{ matrix.php }}-${{ matrix.setup }}-composer-${{ hashFiles('**/composer.lock') }}
 
+      - name: Set PHPUnit version
+        if: matrix.php >= 8.1
+        run: composer require "phpunit/phpunit:^8.5.41" --no-update
+
       - name: Install Dependencies
         run: composer update --prefer-dist --prefer-${{ matrix.setup }} --no-interaction --no-suggest
 
