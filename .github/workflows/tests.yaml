@@ -56,3 +56,12 @@ jobs:
       - name: Run Tests
         run: vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-text --log-junit junit.xml
 
+      - name: Upload Coverage to Codecov
+        if: success()
+        run: bash <(curl -s https://codecov.io/bash)
+
+      - name: Finalize Code Climate Report
+        run: |
+          cp coverage.xml clover.xml
+          EXIT_CODE=$([ ${{ success() }} ] && echo 0 || echo 1)
+          ./cc-test-reporter after-build --coverage-input-type clover --exit-code $EXIT_CODE
