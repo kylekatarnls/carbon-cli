@@ -14,7 +14,7 @@
     "require": {
         "php": "^7.1 || ^8.0",
         "simple-cli/simple-cli": "^1.1",
-        "nesbot/carbon": "^2.20"
+        "nesbot/carbon": "^2.20 || ^3.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^7.5 || ^8.2"

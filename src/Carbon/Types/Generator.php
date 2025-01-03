@@ -3,6 +3,7 @@
 namespace Carbon\Types;
 
 use Carbon\Carbon;
+use Carbon\FactoryImmutable;
 use Closure;
 use ReflectionClass;
 use ReflectionException;
@@ -51,11 +52,17 @@ class Generator
             $this->runBoot($boot);
         }
 
-        $c = new ReflectionClass(Carbon::now());
-        $macros = $c->getProperty('globalMacros');
-        $macros->setAccessible(true);
+        if (method_exists(FactoryImmutable::class, 'getDefaultInstance')) {
+            // Carbon 3
+            return FactoryImmutable::getDefaultInstance()->getSettings()['macros'] ?? [];
+        } else {
+            // Carbon 2
+            $c = new ReflectionClass(Carbon::now());
+            $macros = $c->getProperty('globalMacros');
+            $macros->setAccessible(true);
 
-        return $macros->getValue();
+            return $macros->getValue();
+        }
     }
 
     /**
