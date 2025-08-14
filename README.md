@@ -48,7 +48,7 @@ You also can store the list in your **composer.json**:
 Then run:
 
 ```shell
-./vendor/bin/carbon macro --composer
+./vendor/bin/carbon macro --composer true
 ```
 
 By default, the command will only consider the current directory (app, sources, tests, vendor, etc.) and so will
