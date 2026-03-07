@@ -33,6 +33,10 @@ class Generator
                 $boot = function () use ($file) {
                     include $file;
                 };
+            } elseif (trait_exists($traitName = $boot)) {
+                $boot = function () use ($traitName) {
+                    Carbon::mixin($traitName);
+                };
             }
         }
 
@@ -77,7 +81,7 @@ class Generator
     protected function getClosureData($closure, string $source, int $sourceLength)
     {
         try {
-            $function = new ReflectionFunction($closure);
+            $function = $this->getFunctionFromClosure($closure);
         } catch (ReflectionException $e) {
             return false;
         }
@@ -94,6 +98,24 @@ class Generator
         return substr($file, 0, $sourceLength + 1) === "$source/"
             ? [$function, $file, $lines]
             : false;
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    protected function getFunctionFromClosure(Closure|string $closure): ReflectionFunction
+    {
+        $function = new ReflectionFunction($closure);
+
+        $staticVariables = $function->getStaticVariables();
+        if (
+            isset($staticVariables['closureBase']) &&
+            ($staticVariables['closureBase'] instanceof Closure || is_string($staticVariables['closureBase']))
+        ) {
+            return new ReflectionFunction($staticVariables['closureBase']);
+        }
+
+        return $function;
     }
 
     /**

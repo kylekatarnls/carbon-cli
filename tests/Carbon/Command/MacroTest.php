@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use Carbon\Cli;
 use Carbon\Tests\DummyMixin;
 use Carbon\Tests\DummyMixin2;
+use Carbon\Tests\DummyTrait;
+use Carbon\Tests\DummyTrait2;
 use Carbon\Tests\SubMacro;
 use Carbon\Tests\TestCase;
 
@@ -33,7 +35,7 @@ class MacroTest extends TestCase
      * @covers \Carbon\Types\Generator::getMethodSourceCode
      * @covers \Carbon\Types\Generator::writeHelpers
      */
-    public function testRun()
+    public function testRunClassMixins()
     {
         $dir = sys_get_temp_dir().'/macro-test-'.mt_rand(0, 999999);
         @mkdir($dir);
@@ -53,8 +55,53 @@ class MacroTest extends TestCase
             '_ide_carbon_mixin_instantiated.php',
             '_ide_carbon_mixin_static.php',
         ], scandir("$dir/types"));
-        $this->assertFileEquals(__DIR__.'/_ide_carbon_mixin_instantiated.php', "$dir/types/_ide_carbon_mixin_instantiated.php");
-        $this->assertFileEquals(__DIR__.'/_ide_carbon_mixin_static.php', "$dir/types/_ide_carbon_mixin_static.php");
+        $this->assertFileEquals(__DIR__.'/classes_output/_ide_carbon_mixin_instantiated.php', "$dir/types/_ide_carbon_mixin_instantiated.php");
+        $this->assertFileEquals(__DIR__.'/classes_output/_ide_carbon_mixin_static.php', "$dir/types/_ide_carbon_mixin_static.php");
+
+        $this->removeDirectory($dir);
+    }
+
+    /**
+     * @covers ::run
+     * @covers \Carbon\Types\Generator::runBoot
+     * @covers \Carbon\Types\Generator::getClosureData
+     * @covers \Carbon\Types\Generator::getMethodDocBlock
+     * @covers \Carbon\Types\Generator::getMethodDoc
+     * @covers \Carbon\Types\Generator::getMethods
+     * @covers \Carbon\Types\Generator::dumpReturnType
+     * @covers \Carbon\Types\Generator::getMethodsDefinitions
+     * @covers \Carbon\Types\Generator::getParameterName
+     * @covers \Carbon\Types\Generator::getNormalizedType
+     * @covers \Carbon\Types\Generator::getParameterNameAndType
+     * @covers \Carbon\Types\Generator::dumpParameter
+     * @covers \Carbon\Types\Generator::dumpValue
+     * @covers \Carbon\Types\Generator::getNextMethod
+     * @covers \Carbon\Types\Generator::loadFileLines
+     * @covers \Carbon\Types\Generator::getMethodSourceCode
+     * @covers \Carbon\Types\Generator::writeHelpers
+     */
+    public function testRunTraitMixins()
+    {
+        $dir = sys_get_temp_dir().'/macro-test-'.mt_rand(0, 999999);
+        @mkdir($dir);
+        chdir($dir);
+        $cli = new Cli();
+        $cli->mute();
+        $cli('carbon', 'macro', DummyTrait::class, DummyTrait2::class, '--source-path', __DIR__.'/..');
+
+        $this->assertSame([
+            '.',
+            '..',
+            'types',
+        ], scandir($dir));
+        $this->assertSame([
+            '.',
+            '..',
+            '_ide_carbon_mixin_instantiated.php',
+            '_ide_carbon_mixin_static.php',
+        ], scandir("$dir/types"));
+        $this->assertFileEquals(__DIR__.'/traits_output/_ide_carbon_mixin_instantiated.php', "$dir/types/_ide_carbon_mixin_instantiated.php");
+        $this->assertFileEquals(__DIR__.'/traits_output/_ide_carbon_mixin_static.php', "$dir/types/_ide_carbon_mixin_static.php");
 
         $this->removeDirectory($dir);
     }

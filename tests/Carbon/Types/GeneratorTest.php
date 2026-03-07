@@ -5,6 +5,7 @@ namespace Carbon\Tests;
 use Carbon\Carbon;
 use Carbon\Types\Generator;
 use PHPUnit\Framework\TestCase;
+use ReflectionException;
 use ReflectionMethod;
 
 /**
@@ -22,6 +23,28 @@ class GeneratorTest extends TestCase
         $method->setAccessible(true);
 
         $this->assertFalse($method->invoke($generator, 'doesNotExist', 'foobar', 2));
+    }
+
+    /**
+     * @covers ::getFunctionFromClosure
+     * @testWith [true]
+     *           [false]
+     */
+    public function testGetFunctionFromClosure(bool $wrapClosure)
+    {
+        $generator = new Generator();
+        $method = new ReflectionMethod(Generator::class, 'getFunctionFromClosure');
+        $method->setAccessible(true);
+
+        $this->expectException(ReflectionException::class);
+        if ($wrapClosure) {
+            $closure = function () {
+                static $closureBase = 'doesNotExist';
+            };
+        } else {
+            $closure = 'doesNotExist';
+        }
+        $this->assertFalse($method->invoke($generator, $closure));
     }
 
     /**
